@@ -8,3 +8,19 @@ indexing-settings:
       name: Skillbox
     - url: https://www.playback.ru
       name: PlayBack.Ru
+
+server:
+  port: 8080
+
+spring:
+  datasource:
+    username: root
+    password: password
+    url: jdbc:mysql://localhost:3306/search_engine?useSSL=false&requireSSL=false&allowPublicKeyRetrieval=true
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+    hibernate:
+      ddl-auto: create
+    show-sql: true

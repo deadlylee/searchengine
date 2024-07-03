@@ -1,6 +1,7 @@
 package searchengine.model;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,6 +32,6 @@ public class Page {
     @Column(name = "content", nullable = false, columnDefinition = "MEDIUMTEXT")
     private String content;
 
-    @OneToMany(mappedBy = "page")
+    @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
     private List<Index> indices;
 }

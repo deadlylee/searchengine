@@ -33,6 +33,6 @@ public class Site {
     @Column(nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "site")
+    @OneToMany(mappedBy = "site", cascade = CascadeType.ALL)
     private List<Page> pages;
 }

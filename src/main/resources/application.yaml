@@ -2,10 +2,10 @@
 
 indexing-settings:
   sites:
+    - url: https://nikoartgallery.com/
+      name: Галерея Нико
     - url: https://volochek.life/
-      name: Volochek
-    - url: https://www.svetlovka.ru/
-      name: Svetlovka
+      name: Вышний Волочёк
     - url: https://www.playback.ru
       name: PlayBack.Ru
 
@@ -23,4 +23,4 @@ spring:
         format_sql: true
     hibernate:
       ddl-auto: create
-    show-sql: true
+#    show-sql: true

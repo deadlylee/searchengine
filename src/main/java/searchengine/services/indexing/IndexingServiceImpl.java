@@ -12,6 +12,8 @@ import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.concurrent.ForkJoinTask;
 
 @Service
 @RequiredArgsConstructor
@@ -32,9 +34,12 @@ public class IndexingServiceImpl implements IndexingService {
             createAndSaveSite(url, name);
         }
 
-        WebScrapingAction action = new WebScrapingAction("https://www.afisha.uz/ru", 3, pageRepository, siteRepository);
-        action.invoke();
-        log.info("indexing finished");
+        List<ForkJoinTask<Void>> tasks = siteRepository.findAll().stream()
+                .map(site -> new WebScrapingAction(site.getUrl(), site.getId(), pageRepository, siteRepository).fork())
+                .toList();
+        tasks.forEach(ForkJoinTask::join);
+
+        log.info("INDEXING FINISHED");
     }
 
     private void deleteSite(String url) {

@@ -1,6 +1,8 @@
 package searchengine.services.indexing;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import searchengine.config.SitesList;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class IndexingServiceImpl implements IndexingService {
 
+    private static final Logger log = LoggerFactory.getLogger(IndexingServiceImpl.class);
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
     private final SitesList sitesList;
@@ -29,9 +32,9 @@ public class IndexingServiceImpl implements IndexingService {
             createAndSaveSite(url, name);
         }
 
-        WebScrapingAction action = new WebScrapingAction("https://www.playback.ru", 3, pageRepository, siteRepository);
+        WebScrapingAction action = new WebScrapingAction("https://www.afisha.uz/ru", 3, pageRepository, siteRepository);
         action.invoke();
-        System.out.println("finished");
+        log.info("indexing finished");
     }
 
     private void deleteSite(String url) {

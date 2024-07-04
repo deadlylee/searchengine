@@ -12,6 +12,7 @@ import searchengine.util.HtmlParser;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,8 +47,7 @@ public class WebScrapingAction extends RecursiveAction {
         page.setContent(parser.getContent());
         page.setPath(path);
         page.setCode(parser.getCode());
-        Optional<Site> siteOptional = siteRepository.findById(siteId);
-        Site site = siteOptional.orElseThrow();
+        Site site = updateStatusTime();
         page.setSite(site);
         pageRepository.save(page);
 
@@ -62,5 +62,13 @@ public class WebScrapingAction extends RecursiveAction {
         }
 
         subActions.forEach(ForkJoinTask::join);
+    }
+
+    private Site updateStatusTime() {
+        Optional<Site> siteOptional = siteRepository.findById(siteId);
+        Site site = siteOptional.orElseThrow();
+        site.setStatusTime(LocalDateTime.now());
+        siteRepository.save(site);
+        return site;
     }
 }

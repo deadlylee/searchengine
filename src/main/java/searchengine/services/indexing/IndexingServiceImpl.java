@@ -34,12 +34,21 @@ public class IndexingServiceImpl implements IndexingService {
             createAndSaveSite(url, name);
         }
 
-        List<ForkJoinTask<Void>> tasks = siteRepository.findAll().stream()
-                .map(site -> new WebScrapingAction(site.getUrl(), site.getId(), pageRepository, siteRepository).fork())
-                .toList();
-        tasks.forEach(ForkJoinTask::join);
+        webScrape();
 
         log.info("INDEXING FINISHED");
+    }
+
+    @Override
+    public void stopIndexing() {
+
+    }
+
+    private void webScrape() {
+        List<WebScrapingAction> list = siteRepository.findAll().stream()
+                .map(site -> (WebScrapingAction) new WebScrapingAction(site.getUrl(), site.getId(), pageRepository, siteRepository, true).fork())
+                .toList();
+        list.forEach(ForkJoinTask::join);
     }
 
     private void deleteSite(String url) {

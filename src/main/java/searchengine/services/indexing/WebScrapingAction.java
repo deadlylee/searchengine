@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import searchengine.model.Page;
 import searchengine.model.Site;
+import searchengine.model.Status;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 import searchengine.util.HtmlParser;
@@ -28,6 +29,7 @@ public class WebScrapingAction extends RecursiveAction {
     private final Integer siteId;
     private final PageRepository pageRepository;
     private final SiteRepository siteRepository;
+    private final boolean isRootTask;
 
     @SneakyThrows(MalformedURLException.class)
     @Override
@@ -56,12 +58,23 @@ public class WebScrapingAction extends RecursiveAction {
         List<WebScrapingAction> subActions = new ArrayList<>();
         for (String link : links) {
 
-            WebScrapingAction subAction = new WebScrapingAction(link, siteId, pageRepository, siteRepository);
+            WebScrapingAction subAction = new WebScrapingAction(link, siteId, pageRepository, siteRepository, false);
             subAction.fork();
             subActions.add(subAction);
         }
 
         subActions.forEach(ForkJoinTask::join);
+
+        if (isRootTask) {
+            updateStatus();
+        }
+    }
+
+    private void updateStatus() {
+        Optional<Site> siteOptional = siteRepository.findById(siteId);
+        Site site = siteOptional.orElseThrow();
+        site.setStatus(Status.INDEXED);
+        siteRepository.save(site);
     }
 
     private Site updateStatusTime() {

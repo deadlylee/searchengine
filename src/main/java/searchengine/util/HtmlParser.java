@@ -22,7 +22,7 @@ public class HtmlParser {
     private final @Getter String url;
     private @Getter int code;
     private Document document;
-    private static final String fileExtensionRegex = "\\.(pdf|jpg|jpeg|png|gif|doc|docx|xls|xlsx|ppt|pptx)$";
+    private static final String fileExtensionRegex = "\\.(pdf|jpg|jpeg|png|gif|doc|docx|xls|xlsx|ppt|pptx|html)$";
     private static final Pattern pattern = Pattern.compile(fileExtensionRegex, Pattern.CASE_INSENSITIVE);
 
     public HtmlParser(String url) {

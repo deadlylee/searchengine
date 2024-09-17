@@ -13,6 +13,7 @@ import searchengine.repository.SiteRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 
 @Service
@@ -23,32 +24,54 @@ public class IndexingServiceImpl implements IndexingService {
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
     private final SitesList sitesList;
+    private ForkJoinPool forkJoinPool;
+    private boolean stopRequested;
 
     @Override
     public void startIndexing() {
-
+        forkJoinPool = new ForkJoinPool();
         for (searchengine.config.Site siteConfig : sitesList.getSites()) {
             String url = siteConfig.getUrl();
             String name = siteConfig.getName();
             deleteSite(url);
             createAndSaveSite(url, name);
         }
-
         webScrape();
-
+        if (stopRequested) {
+            setStatusToFailed();
+            return;
+        }
         log.info("INDEXING FINISHED");
     }
 
     @Override
     public void stopIndexing() {
+        stopRequested = true;
+        siteRepository.findAll().forEach(site -> {
+            site.setLastError("Индексация остановлена пользователем"); // в бд просто стоит поле null
+            siteRepository.save(site);
+        });
+        forkJoinPool.shutdownNow();
+        log.info("INDEXING STOPPED");
+    }
 
+    public boolean indexingInProgress() {
+        return forkJoinPool != null && (forkJoinPool.getRunningThreadCount() > 0 || forkJoinPool.hasQueuedSubmissions());
+    }
+
+    private void setStatusToFailed() {
+        siteRepository.findAll().forEach(site -> {
+            site.setStatus(Status.FAILED);
+            siteRepository.save(site);
+        });
     }
 
     private void webScrape() {
-        List<WebScrapingAction> list = siteRepository.findAll().stream()
-                .map(site -> (WebScrapingAction) new WebScrapingAction(site.getUrl(), site.getId(), pageRepository, siteRepository, true).fork())
+        List<ForkJoinTask<Void>> tasks = siteRepository.findAll().stream()
+                .map(site -> new WebScrapingAction(site.getUrl(), site.getId(), pageRepository, siteRepository, true))
+                .map(forkJoinPool::submit)
                 .toList();
-        list.forEach(ForkJoinTask::join);
+        tasks.forEach(ForkJoinTask::join);
     }
 
     private void deleteSite(String url) {

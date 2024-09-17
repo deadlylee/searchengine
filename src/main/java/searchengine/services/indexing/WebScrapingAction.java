@@ -16,8 +16,8 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
@@ -63,7 +63,11 @@ public class WebScrapingAction extends RecursiveAction {
             subActions.add(subAction);
         }
 
-        subActions.forEach(ForkJoinTask::join);
+         try {
+             subActions.forEach(ForkJoinTask::join);
+         } catch (CancellationException e) {
+             log.info("TASK CANCELLED");
+         }
 
         if (isRootTask) {
             updateStatus();
@@ -71,17 +75,14 @@ public class WebScrapingAction extends RecursiveAction {
     }
 
     private void updateStatus() {
-        Optional<Site> siteOptional = siteRepository.findById(siteId);
-        Site site = siteOptional.orElseThrow();
+        Site site = siteRepository.findById(siteId).orElseThrow();
         site.setStatus(Status.INDEXED);
         siteRepository.save(site);
     }
 
     private Site updateStatusTime() {
-        Optional<Site> siteOptional = siteRepository.findById(siteId);
-        Site site = siteOptional.orElseThrow();
+        Site site = siteRepository.findById(siteId).orElseThrow();
         site.setStatusTime(LocalDateTime.now());
-        siteRepository.save(site);
-        return site;
+        return siteRepository.save(site);
     }
 }

@@ -5,4 +5,6 @@ public interface IndexingService {
     void startIndexing();
 
     void stopIndexing();
+
+    boolean indexingInProgress();
 }

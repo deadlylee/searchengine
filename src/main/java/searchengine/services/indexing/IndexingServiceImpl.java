@@ -38,7 +38,11 @@ public class IndexingServiceImpl implements IndexingService {
         }
         webScrape();
         if (stopRequested) {
-            setStatusToFailed();
+            siteRepository.findAll().forEach(site -> {
+                site.setLastError("Индексация остановлена пользователем");
+                site.setStatus(Status.FAILED);
+                siteRepository.save(site);
+        });
             return;
         }
         log.info("INDEXING FINISHED");
@@ -47,23 +51,12 @@ public class IndexingServiceImpl implements IndexingService {
     @Override
     public void stopIndexing() {
         stopRequested = true;
-        siteRepository.findAll().forEach(site -> {
-            site.setLastError("Индексация остановлена пользователем"); // в бд просто стоит поле null
-            siteRepository.save(site);
-        });
         forkJoinPool.shutdownNow();
         log.info("INDEXING STOPPED");
     }
 
     public boolean indexingInProgress() {
         return forkJoinPool != null && (forkJoinPool.getRunningThreadCount() > 0 || forkJoinPool.hasQueuedSubmissions());
-    }
-
-    private void setStatusToFailed() {
-        siteRepository.findAll().forEach(site -> {
-            site.setStatus(Status.FAILED);
-            siteRepository.save(site);
-        });
     }
 
     private void webScrape() {

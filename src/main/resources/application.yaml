@@ -1,9 +1,9 @@
 indexing-settings:
   sites:
-#    - url: https://nikoartgallery.com
-#      name: Галерея Нико
-#    - url: https://www.playback.ru
-#      name: PlayBack.Ru
+    - url: https://nikoartgallery.com
+      name: Галерея Нико
+    - url: https://www.playback.ru
+      name: PlayBack.Ru
     - url: https://www.afisha.uz/ru
       name: Afisha.uz
 
